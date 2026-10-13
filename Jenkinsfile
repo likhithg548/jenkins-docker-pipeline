@@ -3,12 +3,23 @@ pipeline {
     agent any
 
     stages {
-        stage('Check Windows and Docker') {
+        stage('Build Docker Image') {
             steps {
-                bat 'echo PATH=%PATH%'
-                bat 'where cmd.exe'
-                bat 'where docker.exe'
-                bat 'docker.exe --version'
+                bat 'docker build -t flaskapp .'
+            }
+        }
+
+        stage('Run Dev Container') {
+            steps {
+                bat 'docker rm -f dev-container 2>NUL || exit /b 0'
+                bat 'docker run -d --name dev-container -p 5002:5000 flaskapp'
+            }
+        }
+
+        stage('Run Test Container') {
+            steps {
+                bat 'docker rm -f test-container 2>NUL || exit /b 0'
+                bat 'docker run -d --name test-container -p 5003:5000 flaskapp'
             }
         }
     }
